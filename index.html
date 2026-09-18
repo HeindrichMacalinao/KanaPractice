@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kana Practice — hiragana &amp; katakana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EAEDE4;
+    --cell:#FBFAF5;
+    --rule:#B4C4B2;
+    --rule-soft:#D5DED1;
+    --ink:#1B1E1A;
+    --ink-soft:#5E665B;
+    --green:#2F6B4E;
+    --shu:#B8422C;
+    --radius:2px;
+    --kana-font:'Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho','MS Mincho',serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Zen Kaku Gothic New','Hiragino Sans','Segoe UI',system-ui,sans-serif;
+    font-size:15px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1000px;margin:0 auto;padding:0 20px 80px}
+
+  header.top{
+    padding:34px 0 18px;
+    display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;
+    border-bottom:1px solid var(--rule);
+  }
+  .brand{display:flex;align-items:baseline;gap:14px}
+  .brand .jp{font-family:var(--kana-font);font-size:40px;line-height:1;letter-spacing:.18em;color:var(--green)}
+  .brand .en{font-size:13px;color:var(--ink-soft);letter-spacing:.04em}
+  .headline-sub{font-size:13px;color:var(--ink-soft);max-width:36ch;margin:0}
+
+  nav.tabs{display:flex;gap:2px;margin:18px 0;flex-wrap:wrap;border-bottom:1px solid var(--rule)}
+  nav.tabs button{
+    appearance:none;border:1px solid transparent;border-bottom:none;background:none;
+    font:inherit;font-size:14px;color:var(--ink-soft);
+    padding:10px 16px;cursor:pointer;position:relative;top:1px;border-radius:var(--radius) var(--radius) 0 0;
+  }
+  nav.tabs button:hover{color:var(--ink)}
+  nav.tabs button[aria-selected="true"]{background:var(--cell);border-color:var(--rule);color:var(--ink);font-weight:500}
+  nav.tabs button .ja{font-family:var(--kana-font);margin-right:7px;color:var(--green)}
+
+  .controls{
+    background:var(--cell);border:1px solid var(--rule);border-radius:var(--radius);
+    padding:14px 16px;margin-bottom:22px;
+    display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;
+  }
+  .ctl{display:flex;flex-direction:column;gap:7px}
+  .ctl h4{margin:0;font-size:11px;font-weight:500;color:var(--ink-soft);letter-spacing:.06em}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{
+    appearance:none;font:inherit;font-size:13px;cursor:pointer;
+    padding:5px 11px;border:1px solid var(--rule);background:transparent;color:var(--ink-soft);
+    border-radius:var(--radius);
+  }
+  .chip:hover{border-color:var(--green);color:var(--ink)}
+  .chip[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#F6F8F3}
+  .chip[disabled]{opacity:.35;cursor:not-allowed}
+  .chip.ghost[aria-pressed="true"]{background:var(--ink);border-color:var(--ink)}
+  .deck-count{font-size:12px;color:var(--ink-soft);align-self:flex-end;margin-left:auto}
+  .deck-count b{color:var(--green);font-weight:700;font-size:15px}
+
+  .set-title{display:flex;align-items:baseline;gap:10px;margin:26px 0 10px}
+  .set-title h3{margin:0;font-family:var(--kana-font);font-size:19px;font-weight:400}
+  .set-title span{font-size:12px;color:var(--ink-soft)}
+  .chart-row{display:flex;gap:6px;margin-bottom:6px;align-items:stretch}
+  .row-label{flex:0 0 30px;display:flex;align-items:center;justify-content:center;font-family:var(--kana-font);font-size:14px;color:var(--green)}
+  .cells{display:flex;gap:6px;flex:1}
+  .cell{
+    flex:1 1 0;min-width:0;aspect-ratio:1/1;
+    background:var(--cell);border:1px solid var(--rule-soft);border-radius:var(--radius);
+    position:relative;cursor:pointer;overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font:inherit;padding:0;color:inherit;
+  }
+  .cell.empty{background:transparent;border-color:transparent;cursor:default;pointer-events:none}
+  .cell::before,.cell::after{content:"";position:absolute;background:var(--rule-soft);opacity:.55}
+  .cell::before{left:50%;top:14%;bottom:14%;width:1px}
+  .cell::after{top:50%;left:14%;right:14%;height:1px}
+  .cell:hover{border-color:var(--green)}
+  .cell .k{font-family:var(--kana-font);font-size:clamp(20px,4.6vw,30px);line-height:1;position:relative;z-index:1}
+  .cell .r{font-size:10px;color:var(--ink-soft);margin-top:5px;position:relative;z-index:1}
+  .cell .bar{position:absolute;left:0;bottom:0;height:3px;background:var(--green);z-index:2}
+  .cell.trouble .bar{background:var(--shu)}
+  .cell.trouble .k{color:var(--shu)}
+  .cell.flow{aspect-ratio:auto;padding:12px 4px}
+  .flow-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px}
+
+  .stage{background:var(--cell);border:1px solid var(--rule);border-radius:var(--radius);padding:30px 24px;text-align:center}
+  .prompt-cell{
+    width:min(260px,64vw);aspect-ratio:1/1;margin:0 auto 22px;position:relative;
+    border:1px solid var(--rule);background:#fff;border-radius:var(--radius);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .prompt-cell::before,.prompt-cell::after{content:"";position:absolute;background:var(--rule-soft)}
+  .prompt-cell::before{left:50%;top:8%;bottom:8%;width:1px}
+  .prompt-cell::after{top:50%;left:8%;right:8%;height:1px}
+  .prompt-cell .glyph{font-family:var(--kana-font);font-size:clamp(84px,20vw,140px);line-height:1;position:relative;z-index:1}
+  .prompt-cell .glyph.roman{font-family:'Zen Kaku Gothic New',sans-serif;font-size:clamp(40px,10vw,66px)}
+  .answer-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  input[type=text]{
+    font:inherit;font-size:20px;text-align:center;letter-spacing:.08em;padding:11px 14px;width:200px;
+    border:1px solid var(--rule);border-bottom:2px solid var(--green);background:#fff;color:var(--ink);border-radius:var(--radius);
+  }
+  input[type=text]:focus{outline:2px solid var(--green);outline-offset:2px}
+  .btn{appearance:none;font:inherit;font-size:14px;cursor:pointer;padding:11px 18px;border:1px solid var(--ink);background:var(--ink);color:#F6F8F3;border-radius:var(--radius)}
+  .btn:hover{background:#000}
+  .btn.sec{background:transparent;color:var(--ink-soft);border-color:var(--rule)}
+  .btn.sec:hover{background:transparent;color:var(--ink);border-color:var(--ink)}
+  .btn.good{background:var(--green);border-color:var(--green)}
+  .btn.bad{background:var(--shu);border-color:var(--shu)}
+  .feedback{min-height:30px;margin-top:16px;font-size:15px}
+  .feedback .ok{color:var(--green)}
+  .feedback .no{color:var(--shu)}
+  .kana-inline{font-family:var(--kana-font);font-size:20px}
+  .choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:420px;margin:0 auto}
+  .choice{
+    font:inherit;cursor:pointer;padding:16px 10px;background:#fff;
+    border:1px solid var(--rule);border-radius:var(--radius);color:var(--ink);
+    display:flex;align-items:center;justify-content:center;gap:10px;
+  }
+  .choice:hover{border-color:var(--green)}
+  .choice .num{font-size:10px;color:var(--ink-soft);border:1px solid var(--rule-soft);border-radius:2px;padding:0 4px}
+  .choice .lab{font-size:22px}
+  .choice .lab.kana{font-family:var(--kana-font);font-size:32px}
+  .choice.right{border-color:var(--green);background:#EDF4EE}
+  .choice.wrong{border-color:var(--shu);background:#F9EDEA}
+  .choice[disabled]{cursor:default}
+  .scorebar{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin-top:20px;padding-top:16px;border-top:1px solid var(--rule-soft)}
+  .scorebar b{font-size:17px;color:var(--ink);font-weight:700;display:block;line-height:1.2}
+  .scorebar .s{text-align:center}
+  .hintline{font-size:12px;color:var(--ink-soft);margin-top:14px}
+  kbd{font:inherit;font-size:11px;border:1px solid var(--rule);border-bottom-width:2px;border-radius:3px;padding:1px 5px;background:#fff}
+
+  .write-area{display:flex;gap:26px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+  canvas#pad{background:#fff;border:1px solid var(--rule);border-radius:var(--radius);touch-action:none;cursor:crosshair}
+  .write-side{text-align:left;max-width:240px}
+  .write-side h4{margin:0 0 4px;font-size:13px;font-weight:500}
+  .write-side p{margin:0 0 16px;font-size:12px;color:var(--ink-soft)}
+  .write-side .target{font-size:20px}
+  .stack{display:flex;flex-direction:column;gap:8px}
+
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin-bottom:26px}
+  .stat{background:var(--cell);padding:16px 14px}
+  .stat b{display:block;font-size:26px;line-height:1.1;font-weight:700}
+  .stat span{font-size:11px;color:var(--ink-soft)}
+  .trouble-list{display:flex;flex-wrap:wrap;gap:8px}
+  .trouble-item{background:var(--cell);border:1px solid var(--rule);border-radius:var(--radius);padding:8px 12px;display:flex;align-items:baseline;gap:8px}
+  .trouble-item .k{font-family:var(--kana-font);font-size:24px;color:var(--shu)}
+  .trouble-item .m{font-size:11px;color:var(--ink-soft)}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--ink-soft);margin:14px 0 0}
+  .legend i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:5px}
+  .empty-note{color:var(--ink-soft);font-size:13px;background:var(--cell);border:1px dashed var(--rule);padding:22px;border-radius:var(--radius);text-align:center}
+  .hidden{display:none !important}
+  footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--rule);font-size:11px;color:var(--ink-soft);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  @media (max-width:560px){
+    .wrap{padding:0 12px 60px}
+    .row-label{flex-basis:20px;font-size:12px}
+    .cells{gap:4px}
+    .chart-row{gap:4px;margin-bottom:4px}
+    .cell .r{font-size:9px;margin-top:3px}
+    .controls{gap:16px;padding:12px}
+    .choices{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <span class="jp">仮名</span>
+      <span class="en">Kana Practice</span>
+    </div>
+    <p class="headline-sub">Every hiragana and katakana, including voiced, combined and foreign-sound forms. Practice keeps returning whatever you keep missing.</p>
+  </header>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-view="chart" aria-selected="true"><span class="ja">表</span>Chart</button>
+    <button role="tab" data-view="type" aria-selected="false"><span class="ja">読</span>Read it</button>
+    <button role="tab" data-view="pick" aria-selected="false"><span class="ja">選</span>Pick it</button>
+    <button role="tab" data-view="write" aria-selected="false"><span class="ja">書</span>Write it</button>
+    <button role="tab" data-view="progress" aria-selected="false"><span class="ja">録</span>Progress</button>
+  </nav>
+
+  <section class="controls">
+    <div class="ctl">
+      <h4>Script</h4>
+      <div class="chips" id="scriptChips">
+        <button class="chip" data-script="hira" aria-pressed="true">Hiragana</button>
+        <button class="chip" data-script="kata" aria-pressed="true">Katakana</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <h4>Character sets</h4>
+      <div class="chips" id="setChips">
+        <button class="chip" data-set="basic" aria-pressed="true">Basic 46</button>
+        <button class="chip" data-set="dakuten" aria-pressed="false">Voiced</button>
+        <button class="chip" data-set="yoon" aria-pressed="false">Combined</button>
+        <button class="chip" data-set="ext" aria-pressed="false">Foreign sounds</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <h4>Typeface of the kana</h4>
+      <div class="chips" id="fontChips">
+        <button class="chip ghost" data-font="mincho" aria-pressed="true">Mincho</button>
+        <button class="chip ghost" data-font="gothic" aria-pressed="false">Gothic</button>
+        <button class="chip ghost" data-font="maru" aria-pressed="false">Rounded</button>
+      </div>
+    </div>
+    <div class="deck-count"><b id="deckCount">46</b> characters in play</div>
+  </section>
+
+  <section id="view-chart"></section>
+
+  <section id="view-type" class="hidden">
+    <div class="stage">
+      <div class="prompt-cell"><span class="glyph" id="typeGlyph">あ</span></div>
+      <div class="answer-row">
+        <input type="text" id="typeInput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="romaji" aria-label="Type the romaji reading">
+        <button class="btn" id="typeSubmit">Check</button>
+        <button class="btn sec" id="typeSkip">Show answer</button>
+      </div>
+      <div class="feedback" id="typeFeedback"></div>
+      <div class="scorebar">
+        <div class="s"><b id="tScore">0</b><span>correct</span></div>
+        <div class="s"><b id="tAcc">—</b><span>accuracy</span></div>
+        <div class="s"><b id="tStreak">0</b><span>streak</span></div>
+        <div class="s"><b id="tBest">0</b><span>best streak</span></div>
+      </div>
+      <p class="hintline"><kbd>Enter</kbd> checks your answer, <kbd>Enter</kbd> again moves on. Alternative spellings like <em>si</em>, <em>tu</em> and <em>zya</em> count as correct.</p>
+    </div>
+  </section>
+
+  <section id="view-pick" class="hidden">
+    <div class="stage">
+      <div class="prompt-cell"><span class="glyph" id="pickGlyph">あ</span></div>
+      <div class="choices" id="pickChoices"></div>
+      <div class="feedback" id="pickFeedback"></div>
+      <div class="scorebar">
+        <div class="s"><b id="pScore">0</b><span>correct</span></div>
+        <div class="s"><b id="pAcc">—</b><span>accuracy</span></div>
+        <div class="s"><b id="pStreak">0</b><span>streak</span></div>
+        <div class="s"><b id="pDir">kana → romaji</b><span>direction</span></div>
+      </div>
+      <p class="hintline">Press <kbd>1</kbd>–<kbd>4</kbd> to answer. The direction flips every few questions, and the wrong options are look-alikes on purpose.</p>
+    </div>
+  </section>
+
+  <section id="view-write" class="hidden">
+    <div class="stage">
+      <div class="write-area">
+        <canvas id="pad" width="320" height="320"></canvas>
+        <div class="write-side">
+          <h4>Write <span class="target" id="writeTarget">a</span></h4>
+          <p id="writePrompt">Draw the character, then reveal the guide to compare.</p>
+          <div class="stack">
+            <button class="btn sec" id="writeGuide">Show guide</button>
+            <button class="btn sec" id="writeClear">Clear</button>
+            <button class="btn good" id="writeGot">I got it</button>
+            <button class="btn bad" id="writeMiss">Practice again</button>
+          </div>
+          <p class="hintline" style="margin-top:14px">What you mark here feeds the same memory as the quizzes, so weak characters come back sooner.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-progress" class="hidden">
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="set-title" style="margin-top:0"><h3>苦手</h3><span>the characters that keep catching you out</span></div>
+    <div id="troubleList"></div>
+    <div class="set-title" style="margin-top:34px"><h3>覚え</h3><span>bar length shows how well each character has stuck</span></div>
+    <div id="masteryChart"></div>
+    <div class="legend">
+      <span><i style="background:var(--green)"></i>learned</span>
+      <span><i style="background:var(--shu)"></i>missed more often than hit</span>
+      <span><i style="background:var(--rule)"></i>not seen yet</span>
+    </div>
+    <p style="margin-top:26px"><button class="btn sec" id="resetBtn">Erase all progress</button></p>
+  </section>
+
+  <footer>
+    <span>Long vowels, small っ and punctuation are not characters in their own right — they come once these are solid.</span>
+    <span id="saveState">progress saves automatically</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ===== 1. DATA =============================================
+   Hiragana is written out; katakana is derived by codepoint
+   shift (+0x60), which is exact for every standard kana.
+   ========================================================== */
+
+var HIRA_BASIC_ROWS = [
+  ["あ","a"],["い","i"],["う","u"],["え","e"],["お","o"],
+  ["か","ka"],["き","ki"],["く","ku"],["け","ke"],["こ","ko"],
+  ["さ","sa"],["し","shi|si"],["す","su"],["せ","se"],["そ","so"],
+  ["た","ta"],["ち","chi|ti"],["つ","tsu|tu"],["て","te"],["と","to"],
+  ["な","na"],["に","ni"],["ぬ","nu"],["ね","ne"],["の","no"],
+  ["は","ha"],["ひ","hi"],["ふ","fu|hu"],["へ","he"],["ほ","ho"],
+  ["ま","ma"],["み","mi"],["む","mu"],["め","me"],["も","mo"],
+  ["や","ya"],null,["ゆ","yu"],null,["よ","yo"],
+  ["ら","ra"],["り","ri"],["る","ru"],["れ","re"],["ろ","ro"],
+  ["わ","wa"],null,null,null,["を","wo|o"],
+  ["ん","n|nn"],null,null,null,null
+];
+var BASIC_LABELS = ["あ","か","さ","た","な","は","ま","や","ら","わ","ん"];
+
+var HIRA_DAKU_ROWS = [
+  ["が","ga"],["ぎ","gi"],["ぐ","gu"],["げ","ge"],["ご","go"],
+  ["ざ","za"],["じ","ji|zi"],["ず","zu"],["ぜ","ze"],["ぞ","zo"],
+  ["だ","da"],["ぢ","ji|di"],["づ","zu|du"],["で","de"],["ど","do"],
+  ["ば","ba"],["び","bi"],["ぶ","bu"],["べ","be"],["ぼ","bo"],
+  ["ぱ","pa"],["ぴ","pi"],["ぷ","pu"],["ぺ","pe"],["ぽ","po"]
+];
+var DAKU_LABELS = ["が","ざ","だ","ば","ぱ"];
+
+var YOON_SPEC = [
+  ["き","kya","kyu","kyo"],
+  ["し","sha|sya","shu|syu","sho|syo"],
+  ["ち","cha|tya","chu|tyu","cho|tyo"],
+  ["に","nya","nyu","nyo"],
+  ["ひ","hya","hyu","hyo"],
+  ["み","mya","myu","myo"],
+  ["り","rya","ryu","ryo"],
+  ["ぎ","gya","gyu","gyo"],
+  ["じ","ja|zya|jya","ju|zyu","jo|zyo"],
+  ["ぢ","ja|dya","ju|dyu","jo|dyo"],
+  ["び","bya","byu","byo"],
+  ["ぴ","pya","pyu","pyo"]
+];
+
+var KATA_EXT = [
+  ["イェ","ye"],["ウィ","wi"],["ウェ","we"],["ウォ","wo"],
+  ["ヴ","vu"],["ヴァ","va"],["ヴィ","vi"],["ヴェ","ve"],["ヴォ","vo"],
+  ["シェ","she"],["ジェ","je"],["チェ","che"],
+  ["ティ","ti"],["トゥ","tu"],["ディ","di"],["ドゥ","du"],["テュ","tyu"],["デュ","dyu"],
+  ["ツァ","tsa"],["ツィ","tsi"],["ツェ","tse"],["ツォ","tso"],
+  ["ファ","fa"],["フィ","fi"],["フェ","fe"],["フォ","fo"],["フュ","fyu"],
+  ["クァ","kwa"],["クィ","kwi"],["クェ","kwe"],["クォ","kwo"],["グァ","gwa"]
+];
+
+function toKata(s){
+  var out="";
+  for(var i=0;i<s.length;i++){
+    var c=s.charCodeAt(i);
+    out += (c>=0x3041 && c<=0x3096) ? String.fromCharCode(c+0x60) : s.charAt(i);
+  }
+  return out;
+}
+
+var CARDS=[], BY_KANA={};
+function addCard(kana, romajiStr, script, set){
+  var c={k:kana, r:romajiStr.split("|"), script:script, set:set};
+  CARDS.push(c); BY_KANA[kana]=c; return c;
+}
+function buildRows(rows, script, set){
+  var out=[];
+  for(var i=0;i<rows.length;i++){
+    var e=rows[i];
+    if(!e){ out.push(null); continue; }
+    out.push(addCard(script==="kata"?toKata(e[0]):e[0], e[1], script, set));
+  }
+  return out;
+}
+var GRID={hira:{},kata:{}};
+["hira","kata"].forEach(function(sc){
+  GRID[sc].basic   = buildRows(HIRA_BASIC_ROWS, sc, "basic");
+  GRID[sc].dakuten = buildRows(HIRA_DAKU_ROWS, sc, "dakuten");
+  var y=[], smalls=["ゃ","ゅ","ょ"];
+  YOON_SPEC.forEach(function(spec){
+    for(var j=0;j<3;j++){
+      var kana=spec[0]+smalls[j];
+      if(sc==="kata") kana=toKata(kana);
+      y.push(addCard(kana, spec[j+1], sc, "yoon"));
+    }
+  });
+  GRID[sc].yoon=y;
+});
+GRID.kata.ext = KATA_EXT.map(function(e){ return addCard(e[0], e[1], "kata", "ext"); });
+GRID.hira.ext = [];
+
+/* look-alike groups drive the distractors in Pick mode */
+var LOOKALIKE_RAW = [
+  "あおめぬ","いり","うつら","きさち","しつく","すむ","せちさ","そろ","たなにけ",
+  "ぬねれわめ","はほまけ","ひびぴ","ふぶぷ","へくし","まもほ","るろよ","んそ","よまはほ",
+  "アマムヌ","イノンソリ","ウワクヲフ","エユコヨ","オホヤ","カケセヤ","キサナメ",
+  "シツソンリ","スヌクタ","チテナ","トイヒ","ネホオ","ハヘヒ","ミシツ","ムロコ",
+  "ラウフ","レルンノ","ロコユ","ヲラヌ","ケクタ","サキ","ヤセホ"
+];
+var LOOKALIKE={};
+LOOKALIKE_RAW.forEach(function(group){
+  for(var i=0;i<group.length;i++){
+    var ch=group.charAt(i);
+    if(!LOOKALIKE[ch]) LOOKALIKE[ch]=[];
+    for(var j=0;j<group.length;j++){
+      if(i!==j && LOOKALIKE[ch].indexOf(group.charAt(j))<0) LOOKALIKE[ch].push(group.charAt(j));
+    }
+  }
+});
+
+/* ===== 2. STATE + STORAGE ================================= */
+
+var STORE_KEY="kana-practice-v1";
+var state={
+  scripts:{hira:true,kata:true},
+  sets:{basic:true,dakuten:false,yoon:false,ext:false},
+  font:"mincho",
+  view:"chart"
+};
+var stats={};
+var session={right:0,wrong:0,streak:0,best:0,turn:0};
+var lastKana=null;
+
+var mem={};
+var storage={
+  get:function(key){
+    if(window.storage && window.storage.get){
+      return window.storage.get(key).then(function(r){ return r?r.value:null; })
+        .catch(function(){ return mem[key]||null; });
+    }
+    return Promise.resolve(mem[key]||null);
+  },
+  set:function(key,val){
+    mem[key]=val;
+    if(window.storage && window.storage.set){
+      return window.storage.set(key,val).catch(function(){ return null; });
+    }
+    return Promise.resolve(null);
+  }
+};
+
+var saveTimer=null;
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(function(){
+    var payload=JSON.stringify({stats:stats,prefs:{scripts:state.scripts,sets:state.sets,font:state.font},best:session.best});
+    storage.set(STORE_KEY,payload);
+    var el2=document.getElementById("saveState");
+    el2.textContent="progress saved";
+    setTimeout(function(){ el2.textContent="progress saves automatically"; },1400);
+  },350);
+}
+function load(){
+  return storage.get(STORE_KEY).then(function(raw){
+    if(!raw) return;
+    try{
+      var d=JSON.parse(raw);
+      if(d.stats) stats=d.stats;
+      if(d.best) session.best=d.best;
+      if(d.prefs){
+        if(d.prefs.scripts) state.scripts=d.prefs.scripts;
+        if(d.prefs.sets) state.sets=d.prefs.sets;
+        if(d.prefs.font) state.font=d.prefs.font;
+      }
+    }catch(e){}
+  });
+}
+function stat(k){
+  if(!stats[k]) stats[k]={box:0,seen:0,right:0,wrong:0};
+  return stats[k];
+}
+
+/* ===== 3. DECK + SPACED SELECTION ========================= */
+
+function deck(){
+  return CARDS.filter(function(c){ return state.scripts[c.script] && state.sets[c.set]; });
+}
+function weight(c){
+  var s=stat(c.k);
+  var w=6-Math.min(s.box,5);
+  if(s.seen===0) w+=3;
+  var miss=s.wrong-s.right*0.35;
+  if(miss>0) w+=Math.min(6,miss*1.8);
+  if(c.k===lastKana) w=0.02;
+  return Math.max(0.05,w);
+}
+function nextCard(){
+  var d=deck();
+  if(!d.length) return null;
+  if(d.length===1) return d[0];
+  var total=0, ws=[];
+  for(var i=0;i<d.length;i++){ var w=weight(d[i]); ws.push(w); total+=w; }
+  var roll=Math.random()*total;
+  for(var j=0;j<d.length;j++){ roll-=ws[j]; if(roll<=0) return d[j]; }
+  return d[d.length-1];
+}
+function grade(card,correct){
+  var s=stat(card.k);
+  s.seen++; session.turn++;
+  if(correct){
+    s.right++; s.box=Math.min(5,s.box+1);
+    session.right++; session.streak++;
+    if(session.streak>session.best) session.best=session.streak;
+  }else{
+    s.wrong++; s.box=0;
+    session.wrong++; session.streak=0;
+  }
+  lastKana=card.k;
+  save();
+}
+
+/* ===== 4. HELPERS ========================================= */
+
+function $(id){ return document.getElementById(id); }
+function el(tag,cls,text){
+  var n=document.createElement(tag);
+  if(cls) n.className=cls;
+  if(text!=null) n.textContent=text;
+  return n;
+}
+function normalize(s){ return String(s).toLowerCase().replace(/[\s\-_'’]/g,""); }
+function isCorrect(card,input){
+  var v=normalize(input);
+  if(!v) return false;
+  for(var i=0;i<card.r.length;i++){ if(normalize(card.r[i])===v) return true; }
+  return false;
+}
+function shuffle(a){
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  return a;
+}
+function accuracy(){
+  var t=session.right+session.wrong;
+  return t ? Math.round(session.right/t*100)+"%" : "—";
+}
+var FONT_STACKS={
+  mincho:"'Zen Old Mincho','Hiragino Mincho ProN','Yu Mincho','MS Mincho',serif",
+  gothic:"'Zen Kaku Gothic New','Hiragino Sans','Yu Gothic','MS Gothic',sans-serif",
+  maru:"'Zen Maru Gothic','Hiragino Maru Gothic ProN',sans-serif"
+};
+function applyFont(){
+  document.documentElement.style.setProperty("--kana-font",FONT_STACKS[state.font]);
+  if(state.view==="write") drawPad();
+}
+
+var jaVoice=null;
+function findVoice(){
+  if(!("speechSynthesis" in window)) return;
+  var vs=window.speechSynthesis.getVoices();
+  for(var i=0;i<vs.length;i++){ if(/^ja/i.test(vs[i].lang)){ jaVoice=vs[i]; return; } }
+}
+if("speechSynthesis" in window){
+  findVoice();
+  window.speechSynthesis.onvoiceschanged=findVoice;
+}
+function say(kana){
+  if(!jaVoice) return;
+  try{
+    window.speechSynthesis.cancel();
+    var u=new SpeechSynthesisUtterance(kana);
+    u.voice=jaVoice; u.lang="ja-JP"; u.rate=0.75;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ===== 5. CHART =========================================== */
+
+var SET_TITLES={
+  basic:["清音","gojūon — the 46 base characters"],
+  dakuten:["濁音・半濁音","゛makes a sound voiced, ゜turns h into p"],
+  yoon:["拗音","a small ゃゅょ glides onto an i-column character"],
+  ext:["外来音","katakana built for sounds borrowed from other languages"]
+};
+var SCRIPT_NAMES={hira:"Hiragana ひらがな",kata:"Katakana カタカナ"};
+
+function cellNode(card,opts){
+  if(!card){ var e=el("div","cell empty"); return e; }
+  var b=el("button","cell");
+  var s=stats[card.k];
+  b.appendChild(el("span","k",card.k));
+  if(!opts||!opts.hideRomaji) b.appendChild(el("span","r",card.r[0]));
+  if(s && s.seen){
+    var bar=el("span","bar");
+    bar.style.width=Math.max(8,(s.box/5)*100)+"%";
+    b.appendChild(bar);
+    if(s.wrong>s.right) b.classList.add("trouble");
+  }
+  b.title=card.k+" = "+card.r.join(", ")+(s&&s.seen?"  ·  "+s.right+"/"+s.seen+" correct":"  ·  not practiced yet");
+  b.setAttribute("aria-label",b.title);
+  b.addEventListener("click",function(){ say(card.k); flashCell(b,card); });
+  return b;
+}
+function flashCell(node,card){
+  var r=node.querySelector(".r");
+  if(!r) return;
+  var orig=r.textContent;
+  r.textContent=card.r.join(" / ");
+  setTimeout(function(){ r.textContent=orig; },1200);
+}
+function renderChart(target,opts){
+  target.innerHTML="";
+  var any=false;
+  ["hira","kata"].forEach(function(sc){
+    if(!state.scripts[sc]) return;
+    var head=el("div","set-title");
+    var h=el("h3",null,SCRIPT_NAMES[sc]);
+    h.style.fontSize="16px"; h.style.color="var(--green)";
+    head.appendChild(h);
+    var placed=false;
+    var frag=document.createDocumentFragment();
+
+    ["basic","dakuten","yoon","ext"].forEach(function(set){
+      if(!state.sets[set]) return;
+      var cards=GRID[sc][set];
+      if(!cards||!cards.length) return;
+      placed=true; any=true;
+      var t=el("div","set-title");
+      t.appendChild(el("h3",null,SET_TITLES[set][0]));
+      t.appendChild(el("span",null,SET_TITLES[set][1]));
+      frag.appendChild(t);
+
+      if(set==="ext"){
+        var g=el("div","flow-grid");
+        cards.forEach(function(c){ var n=cellNode(c,opts); n.classList.add("flow"); g.appendChild(n); });
+        frag.appendChild(g);
+        return;
+      }
+      var per = set==="yoon" ? 3 : 5;
+      var labels = set==="basic" ? BASIC_LABELS
+                 : set==="dakuten" ? DAKU_LABELS
+                 : YOON_SPEC.map(function(y){ return y[0]; });
+      for(var r=0;r*per<cards.length;r++){
+        var row=el("div","chart-row");
+        row.appendChild(el("div","row-label", sc==="kata"?toKata(labels[r]):labels[r]));
+        var cells=el("div","cells");
+        for(var i=0;i<per;i++) cells.appendChild(cellNode(cards[r*per+i],opts));
+        if(set==="yoon"){ cells.appendChild(el("div","cell empty")); cells.appendChild(el("div","cell empty")); }
+        row.appendChild(cells);
+        frag.appendChild(row);
+      }
+    });
+    if(placed){ target.appendChild(head); target.appendChild(frag); }
+  });
+  if(!any) target.appendChild(el("div","empty-note","Nothing selected. Turn on a script and at least one character set above."));
+}
+
+/* ===== 6. READ IT (kana -> romaji, typed) ================= */
+
+var typeCard=null, typeAwaiting=false;
+function typeNext(){
+  typeCard=nextCard();
+  typeAwaiting=false;
+  var g=$("typeGlyph");
+  if(!typeCard){ g.textContent="—"; $("typeFeedback").textContent="Select some characters first."; return; }
+  g.textContent=typeCard.k;
+  $("typeInput").value="";
+  $("typeFeedback").innerHTML="";
+  $("typeSubmit").textContent="Check";
+  if(state.view==="type") $("typeInput").focus();
+}
+function typeCheck(){
+  if(!typeCard) return;
+  if(typeAwaiting){ typeNext(); return; }
+  var val=$("typeInput").value;
+  if(!normalize(val)) return;
+  var ok=isCorrect(typeCard,val);
+  grade(typeCard,ok);
+  typeAwaiting=true;
+  var fb=$("typeFeedback");
+  fb.innerHTML="";
+  var span=el("span",ok?"ok":"no");
+  if(ok){
+    span.textContent="Correct — "+typeCard.r.join(" / ");
+  }else{
+    span.innerHTML='<span class="kana-inline">'+typeCard.k+'</span> is <b>'+typeCard.r[0]+'</b>'+
+      (typeCard.r.length>1?' <span style="color:var(--ink-soft)">(also '+typeCard.r.slice(1).join(", ")+')</span>':'');
+  }
+  fb.appendChild(span);
+  say(typeCard.k);
+  $("typeSubmit").textContent="Next";
+  updateTypeScore();
+}
+function updateTypeScore(){
+  $("tScore").textContent=session.right;
+  $("tAcc").textContent=accuracy();
+  $("tStreak").textContent=session.streak;
+  $("tBest").textContent=session.best;
+}
+
+/* ===== 7. PICK IT (multiple choice, both directions) ====== */
+
+var pickCard=null, pickLocked=false, pickDir="k2r", pickCounter=0, pickOpts=[], pickTimer=null;
+function buildDistractors(card){
+  var pool=deck().filter(function(c){ return c.k!==card.k; });
+  var out=[];
+  (LOOKALIKE[card.k]||[]).forEach(function(ch){
+    var c=BY_KANA[ch];
+    if(c && out.indexOf(c)<0 && pool.indexOf(c)>=0) out.push(c);
+  });
+  out=out.concat(shuffle(pool.filter(function(c){ return c.set===card.set && c.script===card.script && out.indexOf(c)<0; })));
+  out=out.concat(shuffle(pool.filter(function(c){ return out.indexOf(c)<0; })));
+  var uniq=[], used={};
+  used[card.r[0]]=true;
+  for(var i=0;i<out.length && uniq.length<3;i++){
+    if(used[out[i].r[0]]) continue;
+    used[out[i].r[0]]=true;
+    uniq.push(out[i]);
+  }
+  return uniq;
+}
+function pickNext(){
+  clearTimeout(pickTimer);
+  pickCard=nextCard();
+  pickLocked=false;
+  var box=$("pickChoices");
+  box.innerHTML="";
+  $("pickFeedback").innerHTML="";
+  if(!pickCard){ $("pickGlyph").textContent="—"; $("pickFeedback").textContent="Select some characters first."; return; }
+  if(deck().length<4){ $("pickGlyph").textContent="—"; $("pickFeedback").textContent="This mode needs at least 4 characters selected."; return; }
+
+  if(pickCounter%5===0) pickDir = (pickDir==="k2r") ? "r2k" : "k2r";
+  pickCounter++;
+  $("pDir").textContent = pickDir==="k2r" ? "kana → romaji" : "romaji → kana";
+
+  var glyph=$("pickGlyph");
+  glyph.className = "glyph"+(pickDir==="r2k"?" roman":"");
+  glyph.textContent = pickDir==="k2r" ? pickCard.k : pickCard.r[0];
+
+  pickOpts=shuffle(buildDistractors(pickCard).concat([pickCard]));
+  pickOpts.forEach(function(opt,i){
+    var b=el("button","choice");
+    b.appendChild(el("span","num",String(i+1)));
+    b.appendChild(el("span","lab"+(pickDir==="k2r"?"":" kana"), pickDir==="k2r"?opt.r[0]:opt.k));
+    b.addEventListener("click",function(){ pickAnswer(i); });
+    box.appendChild(b);
+  });
+}
+function pickAnswer(i){
+  if(pickLocked||!pickOpts.length||!pickOpts[i]) return;
+  pickLocked=true;
+  var chosen=pickOpts[i];
+  var ok=chosen.k===pickCard.k;
+  grade(pickCard,ok);
+  var nodes=$("pickChoices").children;
+  for(var n=0;n<nodes.length;n++){
+    nodes[n].disabled=true;
+    if(pickOpts[n].k===pickCard.k) nodes[n].classList.add("right");
+    else if(n===i) nodes[n].classList.add("wrong");
+  }
+  var fb=$("pickFeedback");
+  fb.innerHTML="";
+  var s=el("span",ok?"ok":"no");
+  s.innerHTML = ok
+    ? 'Correct — <span class="kana-inline">'+pickCard.k+'</span> '+pickCard.r[0]
+    : '<span class="kana-inline">'+pickCard.k+'</span> is <b>'+pickCard.r[0]+'</b>, not '+chosen.r[0];
+  fb.appendChild(s);
+  say(pickCard.k);
+  $("pScore").textContent=session.right;
+  $("pAcc").textContent=accuracy();
+  $("pStreak").textContent=session.streak;
+  pickTimer=setTimeout(pickNext, ok?700:1600);
+}
+
+/* ===== 8. WRITE IT ======================================== */
+
+var writeCard=null, guideOn=false, ctx=null, drawing=false;
+var strokes=[], current=null, padSize=320;
+function setupPad(){
+  var c=$("pad");
+  var dpr=window.devicePixelRatio||1;
+  padSize=Math.min(320,Math.max(240,Math.min(window.innerWidth-70,320)));
+  c.style.width=padSize+"px"; c.style.height=padSize+"px";
+  c.width=padSize*dpr; c.height=padSize*dpr;
+  ctx=c.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  drawPad();
+}
+function drawPad(){
+  if(!ctx) return;
+  ctx.clearRect(0,0,padSize,padSize);
+  ctx.fillStyle="#fff"; ctx.fillRect(0,0,padSize,padSize);
+  ctx.strokeStyle="#D5DED1"; ctx.lineWidth=1;
+  ctx.setLineDash([5,5]);
+  ctx.beginPath();
+  ctx.moveTo(padSize/2,padSize*0.06); ctx.lineTo(padSize/2,padSize*0.94);
+  ctx.moveTo(padSize*0.06,padSize/2); ctx.lineTo(padSize*0.94,padSize/2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  if(guideOn && writeCard){
+    ctx.save();
+    ctx.globalAlpha=0.17;
+    ctx.fillStyle="#1B1E1A";
+    ctx.font=Math.round(padSize*0.7)+"px "+FONT_STACKS[state.font];
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(writeCard.k,padSize/2,padSize/2+padSize*0.02);
+    ctx.restore();
+  }
+  strokes.forEach(replay);
+}
+function replay(st){
+  if(st.length<2) return;
+  ctx.strokeStyle="#1B1E1A"; ctx.lineWidth=7; ctx.lineCap="round"; ctx.lineJoin="round";
+  ctx.beginPath();
+  ctx.moveTo(st[0].x,st[0].y);
+  for(var i=1;i<st.length;i++) ctx.lineTo(st[i].x,st[i].y);
+  ctx.stroke();
+}
+function padPos(e){
+  var r=$("pad").getBoundingClientRect();
+  return {x:e.clientX-r.left, y:e.clientY-r.top};
+}
+function writeNext(){
+  writeCard=nextCard();
+  strokes=[]; guideOn=false;
+  $("writeGuide").textContent="Show guide";
+  if(!writeCard){
+    $("writeTarget").textContent="—";
+    $("writePrompt").textContent="Select some characters first.";
+    drawPad(); return;
+  }
+  $("writeTarget").textContent=writeCard.r[0];
+  $("writePrompt").textContent="Draw the "+(writeCard.script==="hira"?"hiragana":"katakana")+" for “"+writeCard.r[0]+"”, then reveal the guide to compare.";
+  drawPad();
+}
+function writeGrade(ok){
+  if(!writeCard) return;
+  grade(writeCard,ok);
+  writeNext();
+}
+
+/* ===== 9. PROGRESS ======================================== */
+
+function renderProgress(){
+  var seen=0, learned=0, right=0, wrong=0;
+  Object.keys(stats).forEach(function(k){
+    var s=stats[k];
+    if(s.seen>0) seen++;
+    if(s.box>=4) learned++;
+    right+=s.right; wrong+=s.wrong;
+  });
+  var acc=(right+wrong)?Math.round(right/(right+wrong)*100)+"%":"—";
+  var g=$("statsGrid");
+  g.innerHTML="";
+  [[learned,"characters learned","of "+CARDS.length],
+   [seen,"characters seen",""],
+   [acc,"lifetime accuracy",""],
+   [right+wrong,"answers given",""],
+   [session.best,"best streak",""]].forEach(function(row){
+    var d=el("div","stat");
+    d.appendChild(el("b",null,String(row[0])));
+    d.appendChild(el("span",null,row[1]+(row[2]?" · "+row[2]:"")));
+    g.appendChild(d);
+  });
+
+  var tl=$("troubleList");
+  tl.innerHTML="";
+  var trouble=Object.keys(stats).map(function(k){
+    var s=stats[k];
+    return {k:k,s:s,rate:s.seen?s.wrong/s.seen:0};
+  }).filter(function(o){ return o.s.wrong>0 && o.rate>=0.25; })
+    .sort(function(a,b){ return (b.rate-a.rate)||(b.s.wrong-a.s.wrong); })
+    .slice(0,14);
+  if(!trouble.length){
+    tl.appendChild(el("div","empty-note","Nothing here yet. Characters appear once you have missed one a few times."));
+  }else{
+    var box=el("div","trouble-list");
+    trouble.forEach(function(o){
+      var card=BY_KANA[o.k];
+      var it=el("div","trouble-item");
+      it.appendChild(el("span","k",o.k));
+      it.appendChild(el("span","m",(card?card.r[0]:"")+" · missed "+o.s.wrong+" of "+o.s.seen));
+      box.appendChild(it);
+    });
+    tl.appendChild(box);
+  }
+  renderChart($("masteryChart"),{});
+}
+
+/* ===== 10. VIEWS + WIRING ================================= */
+
+function setView(v){
+  state.view=v;
+  ["chart","type","pick","write","progress"].forEach(function(name){
+    $("view-"+name).classList.toggle("hidden",name!==v);
+  });
+  var btns=$("tabs").querySelectorAll("button");
+  for(var i=0;i<btns.length;i++) btns[i].setAttribute("aria-selected", btns[i].getAttribute("data-view")===v?"true":"false");
+  if(v==="chart") renderChart($("view-chart"),{});
+  if(v==="type"){ if(!typeCard||typeAwaiting) typeNext(); else $("typeInput").focus(); updateTypeScore(); }
+  if(v==="pick"){ if(!pickCard||pickLocked) pickNext(); }
+  if(v==="write"){ setupPad(); if(!writeCard) writeNext(); }
+  if(v==="progress") renderProgress();
+}
+function refreshDeck(){
+  $("deckCount").textContent=deck().length;
+  lastKana=null;
+  if(state.view==="chart") renderChart($("view-chart"),{});
+  if(state.view==="type") typeNext();
+  if(state.view==="pick"){ pickCard=null; pickNext(); }
+  if(state.view==="write") writeNext();
+  if(state.view==="progress") renderProgress();
+  save();
+}
+function syncChips(){
+  var a=document.querySelectorAll("#scriptChips .chip");
+  for(var i=0;i<a.length;i++) a[i].setAttribute("aria-pressed", state.scripts[a[i].getAttribute("data-script")]?"true":"false");
+  var b=document.querySelectorAll("#setChips .chip");
+  for(var j=0;j<b.length;j++) b[j].setAttribute("aria-pressed", state.sets[b[j].getAttribute("data-set")]?"true":"false");
+  var c=document.querySelectorAll("#fontChips .chip");
+  for(var m=0;m<c.length;m++) c[m].setAttribute("aria-pressed", state.font===c[m].getAttribute("data-font")?"true":"false");
+  var extBtn=document.querySelector('#setChips .chip[data-set="ext"]');
+  extBtn.disabled=!state.scripts.kata;
+  extBtn.title=state.scripts.kata?"":"Foreign-sound kana are katakana only";
+}
+
+$("tabs").addEventListener("click",function(e){
+  var b=e.target.closest("button[data-view]");
+  if(b) setView(b.getAttribute("data-view"));
+});
+$("scriptChips").addEventListener("click",function(e){
+  var b=e.target.closest(".chip"); if(!b) return;
+  var s=b.getAttribute("data-script");
+  var other = s==="hira" ? "kata" : "hira";
+  if(state.scripts[s] && !state.scripts[other]) return;
+  state.scripts[s]=!state.scripts[s];
+  if(!state.scripts.kata) state.sets.ext=false;
+  if(!Object.keys(state.sets).some(function(k){return state.sets[k];})) state.sets.basic=true;
+  syncChips(); refreshDeck();
+});
+$("setChips").addEventListener("click",function(e){
+  var b=e.target.closest(".chip"); if(!b||b.disabled) return;
+  var s=b.getAttribute("data-set");
+  var on=Object.keys(state.sets).filter(function(k){ return state.sets[k]; });
+  if(state.sets[s] && on.length===1) return;
+  state.sets[s]=!state.sets[s];
+  syncChips(); refreshDeck();
+});
+$("fontChips").addEventListener("click",function(e){
+  var b=e.target.closest(".chip"); if(!b) return;
+  state.font=b.getAttribute("data-font");
+  syncChips(); applyFont(); save();
+});
+
+$("typeSubmit").addEventListener("click",typeCheck);
+$("typeSkip").addEventListener("click",function(){
+  if(!typeCard||typeAwaiting) return;
+  grade(typeCard,false);
+  typeAwaiting=true;
+  $("typeFeedback").innerHTML='<span class="no"><span class="kana-inline">'+typeCard.k+'</span> is <b>'+typeCard.r[0]+'</b></span>';
+  $("typeSubmit").textContent="Next";
+  say(typeCard.k);
+  updateTypeScore();
+});
+$("typeInput").addEventListener("keydown",function(e){
+  if(e.key==="Enter"){ e.preventDefault(); typeCheck(); }
+});
+document.addEventListener("keydown",function(e){
+  if(state.view==="pick" && !pickLocked && e.key>="1" && e.key<="4"){
+    pickAnswer(Number(e.key)-1);
+  }
+});
+
+$("writeGuide").addEventListener("click",function(){
+  guideOn=!guideOn;
+  this.textContent=guideOn?"Hide guide":"Show guide";
+  drawPad();
+});
+$("writeClear").addEventListener("click",function(){ strokes=[]; drawPad(); });
+$("writeGot").addEventListener("click",function(){ writeGrade(true); });
+$("writeMiss").addEventListener("click",function(){ writeGrade(false); });
+(function padEvents(){
+  var c=$("pad");
+  c.addEventListener("pointerdown",function(e){
+    if(!ctx) return;
+    try{ c.setPointerCapture(e.pointerId); }catch(err){}
+    drawing=true; current=[padPos(e)]; strokes.push(current);
+  });
+  c.addEventListener("pointermove",function(e){
+    if(!drawing||!current) return;
+    current.push(padPos(e));
+    drawPad();
+  });
+  ["pointerup","pointercancel","pointerleave"].forEach(function(ev){
+    c.addEventListener(ev,function(){ drawing=false; current=null; });
+  });
+})();
+window.addEventListener("resize",function(){ if(state.view==="write") setupPad(); });
+
+$("resetBtn").addEventListener("click",function(){
+  if(!window.confirm("Erase every character's history? This cannot be undone.")) return;
+  stats={}; session={right:0,wrong:0,streak:0,best:0,turn:0};
+  save(); refreshDeck(); renderProgress();
+});
+
+load().then(function(){
+  syncChips();
+  applyFont();
+  $("deckCount").textContent=deck().length;
+  setView("chart");
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(function(){ if(state.view==="write") drawPad(); });
+  }
+});
+
+})();
+</script>
+</body>
+</html>

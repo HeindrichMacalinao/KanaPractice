@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kana Practice — hiragana &amp; katakana</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <span class="jp">仮名</span>
+      <span class="en">Kana Practice</span>
+    </div>
+    <p class="headline-sub">Every hiragana and katakana, including voiced, combined and foreign-sound forms. Practice keeps returning whatever you keep missing.</p>
+  </header>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-view="chart" aria-selected="true"><span class="ja">表</span>Chart</button>
+    <button role="tab" data-view="type" aria-selected="false"><span class="ja">読</span>Read it</button>
+    <button role="tab" data-view="pick" aria-selected="false"><span class="ja">選</span>Pick it</button>
+    <button role="tab" data-view="write" aria-selected="false"><span class="ja">書</span>Write it</button>
+    <button role="tab" data-view="progress" aria-selected="false"><span class="ja">録</span>Progress</button>
+  </nav>
+
+  <section class="controls">
+    <div class="ctl">
+      <h4>Script</h4>
+      <div class="chips" id="scriptChips">
+        <button class="chip" data-script="hira" aria-pressed="true">Hiragana</button>
+        <button class="chip" data-script="kata" aria-pressed="true">Katakana</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <h4>Character sets</h4>
+      <div class="chips" id="setChips">
+        <button class="chip" data-set="basic" aria-pressed="true">Basic 46</button>
+        <button class="chip" data-set="dakuten" aria-pressed="false">Voiced</button>
+        <button class="chip" data-set="yoon" aria-pressed="false">Combined</button>
+        <button class="chip" data-set="ext" aria-pressed="false">Foreign sounds</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <h4>Typeface of the kana</h4>
+      <div class="chips" id="fontChips">
+        <button class="chip ghost" data-font="mincho" aria-pressed="true">Mincho</button>
+        <button class="chip ghost" data-font="gothic" aria-pressed="false">Gothic</button>
+        <button class="chip ghost" data-font="maru" aria-pressed="false">Rounded</button>
+      </div>
+    </div>
+    <div class="deck-count"><b id="deckCount">46</b> characters in play</div>
+  </section>
+
+  <section id="view-chart"></section>
+
+  <section id="view-type" class="hidden">
+    <div class="stage">
+      <div class="prompt-cell"><span class="glyph" id="typeGlyph">あ</span></div>
+      <div class="answer-row">
+        <input type="text" id="typeInput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="romaji" aria-label="Type the romaji reading">
+        <button class="btn" id="typeSubmit">Check</button>
+        <button class="btn sec" id="typeSkip">Show answer</button>
+      </div>
+      <div class="feedback" id="typeFeedback"></div>
+      <div class="scorebar">
+        <div class="s"><b id="tScore">0</b><span>correct</span></div>
+        <div class="s"><b id="tAcc">—</b><span>accuracy</span></div>
+        <div class="s"><b id="tStreak">0</b><span>streak</span></div>
+        <div class="s"><b id="tBest">0</b><span>best streak</span></div>
+      </div>
+      <p class="hintline"><kbd>Enter</kbd> checks your answer, <kbd>Enter</kbd> again moves on. Alternative spellings like <em>si</em>, <em>tu</em> and <em>zya</em> count as correct.</p>
+    </div>
+  </section>
+
+  <section id="view-pick" class="hidden">
+    <div class="stage">
+      <div class="prompt-cell"><span class="glyph" id="pickGlyph">あ</span></div>
+      <div class="choices" id="pickChoices"></div>
+      <div class="feedback" id="pickFeedback"></div>
+      <div class="scorebar">
+        <div class="s"><b id="pScore">0</b><span>correct</span></div>
+        <div class="s"><b id="pAcc">—</b><span>accuracy</span></div>
+        <div class="s"><b id="pStreak">0</b><span>streak</span></div>
+        <div class="s"><b id="pDir">kana → romaji</b><span>direction</span></div>
+      </div>
+      <p class="hintline">Press <kbd>1</kbd>–<kbd>4</kbd> to answer. The direction flips every few questions, and the wrong options are look-alikes on purpose.</p>
+    </div>
+  </section>
+
+  <section id="view-write" class="hidden">
+    <div class="stage">
+      <div class="write-area">
+        <canvas id="pad" width="320" height="320"></canvas>
+        <div class="write-side">
+          <h4>Write <span class="target" id="writeTarget">a</span></h4>
+          <p id="writePrompt">Draw the character, then reveal the guide to compare.</p>
+          <div class="stack">
+            <button class="btn sec" id="writeGuide">Show guide</button>
+            <button class="btn sec" id="writeClear">Clear</button>
+            <button class="btn good" id="writeGot">I got it</button>
+            <button class="btn bad" id="writeMiss">Practice again</button>
+          </div>
+          <p class="hintline" style="margin-top:14px">What you mark here feeds the same memory as the quizzes, so weak characters come back sooner.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-progress" class="hidden">
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="set-title" style="margin-top:0"><h3>苦手</h3><span>the characters that keep catching you out</span></div>
+    <div id="troubleList"></div>
+    <div class="set-title" style="margin-top:34px"><h3>覚え</h3><span>bar length shows how well each character has stuck</span></div>
+    <div id="masteryChart"></div>
+    <div class="legend">
+      <span><i style="background:var(--green)"></i>learned</span>
+      <span><i style="background:var(--shu)"></i>missed more often than hit</span>
+      <span><i style="background:var(--rule)"></i>not seen yet</span>
+    </div>
+    <p style="margin-top:26px"><button class="btn sec" id="resetBtn">Erase all progress</button></p>
+  </section>
+
+  <footer>
+    <span>Long vowels, small っ and punctuation are not characters in their own right — they come once these are solid.</span>
+    <span id="saveState">progress saves automatically</span>
+  </footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
